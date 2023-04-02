@@ -1,13 +1,13 @@
 pipeline {
   environment {
     //PROJECT = "REPLACE_WITH_YOUR_PROJECT_ID"
-	PROJECT = "project-4-quality"
-    APP_NAME = "binary-calculator2"
+	PROJECT = "fluid-mind-379620"
+    APP_NAME = "binarycalculator"
 	//CLUSTER = "REPLACE_WITH_YOUR_CLUSTER_NAME"
     CLUSTER = "sofe3980u"
     CLUSTER_ZONE = "northamerica-northeast1-b"
     IMAGE_TAG = "gcr.io/${PROJECT}/${APP_NAME}"
-    JENKINS_CRED = "green-tract-379622"
+    JENKINS_CRED = "project-4-quality"
   }
   
 agent {
