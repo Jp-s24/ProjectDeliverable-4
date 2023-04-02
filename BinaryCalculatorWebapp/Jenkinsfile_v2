@@ -1,43 +1,69 @@
-  pipeline {
-  agent any
-  tools {
-    maven 'maven'
-    googleCloudSdk 'google-cloud-sdk'
-  }
+pipeline {
   environment {
-    PROJECT_ID = 'project-4-quality'
-    CLUSTER_NAME = 'sofe3980u'
-    ZONE = 'northamerica-northeast1-b'
-    IMAGE_NAME = 'binarycalculator'
-    TAG = 'gcr.io/fluid-mind-379620'
-    KUBECONFIG = '/tmp/kubeconfig'
+    //PROJECT = "REPLACE_WITH_YOUR_PROJECT_ID"
+	PROJECT = "fluid-mind-379620"
+    APP_NAME = "binarycalculator"
+	//CLUSTER = "REPLACE_WITH_YOUR_CLUSTER_NAME"
+    CLUSTER = "sofe3980u"
+    CLUSTER_ZONE = "northamerica-northeast1-b"
+    IMAGE_TAG = "gcr.io/${PROJECT}/${APP_NAME}"
+    JENKINS_CRED = "project-4-quality"
+  }
+  
+agent {
+    kubernetes {
+	label 'sample-app'
+      defaultContainer 'jnlp'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+labels:
+  component: ci
+spec:
+  # Use service account that can deploy to all namespaces
+  serviceAccountName: cd-jenkins
+  containers:
+  - name: gcloud
+    image: gcr.io/cloud-builders/gcloud
+    //image: google/cloud-sdk:latest
+    command:
+    - cat
+    tty: true
+  - name: kubectl
+    image: gcr.io/cloud-builders/kubectl
+    command:
+    - cat
+    tty: true
+"""
+}
+  }
+  tools {
+    maven 'maven' 
   }
   stages {
     stage ('Init') {
       steps {
+	    checkout scm
         sh 'echo "Start of Job"'
-        sh 'ls -la'
       }
     }
-    stage ('test') {
-      steps {
-        sh 'mvn clean test -f ./BinaryCalculatorWebapp/pom.xml'
-      }
-    }
+    //stage ('test') {
+    //  steps {
+    //    sh 'mvn clean test -f ./BinaryCalculatorWebapp/pom.xml'
+    //  }
+    //}
     stage ('build') {
       steps {
         sh 'mvn package -DskipTests -f ./BinaryCalculatorWebapp/pom.xml'
-        sh "gcloud auth activate-service-account --key-file=<path-to-your-service-account-key>"
-        sh "gcloud container builds submit --tag gcr.io/${PROJECT_ID}/${IMAGE_NAME}:${TAG} ./BinaryCalculatorWebapp"
       }
     }
-    stage ('Deploy') {
+    stage('Build and push image with Container Builder') {
       steps {
-        sh "gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${ZONE} --project ${PROJECT_ID}"
-        sh "kubectl config use-context gke_${PROJECT_ID}_${ZONE}_${CLUSTER_NAME}"
-        sh "kubectl set image deployment/binary-calculator-webapp binary-calculator-webapp=gcr.io/${PROJECT_ID}/${IMAGE_NAME}:${TAG}"
+        container('gcloud') {
+          sh "/builder/google-cloud-sdk/bin/gcloud builds submit -t ${IMAGE_TAG} ./BinaryCalculatorWebapp/"
+        }
       }
     }
   }
 }
-
