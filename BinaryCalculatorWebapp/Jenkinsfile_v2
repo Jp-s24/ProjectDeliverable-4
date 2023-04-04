@@ -1,7 +1,7 @@
 pipeline {
   environment {
     //PROJECT = "REPLACE_WITH_YOUR_PROJECT_ID"
-	PROJECT = "fluid-mind-379620"
+	PROJECT = "project-4-quality"
     APP_NAME = "binarycalculator"
 	//CLUSTER = "REPLACE_WITH_YOUR_CLUSTER_NAME"
     CLUSTER = "sofe3980u"
