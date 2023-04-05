@@ -1,9 +1,9 @@
 pipeline {
   environment {
-    //PROJECT = "REPLACE_WITH_YOUR_PROJECT_ID"
-	PROJECT = "project-4-quality"
+   PROJECT = "project-4-quality"
+	//PROJECT = "project-4-quality"
     APP_NAME = "binary-calculator2"
-	//CLUSTER = "REPLACE_WITH_YOUR_CLUSTER_NAME"
+	//CLUSTER = "gke_shaped-glazing-379621_northamerica-northeast1-b_sofe3980u"
     CLUSTER = "sofe3980u"
     CLUSTER_ZONE = "northamerica-northeast1-b"
     IMAGE_TAG = "gcr.io/${PROJECT}/${APP_NAME}"
@@ -12,7 +12,7 @@ pipeline {
   
 agent {
     kubernetes {
-	label 'topology.gke.io/zone=northamerica-northeast1-b'
+	label 'sample-app'
       defaultContainer 'jnlp'
       yaml """
 apiVersion: v1
@@ -58,12 +58,14 @@ spec:
         sh 'mvn package -DskipTests -f ./BinaryCalculatorWebapp/pom.xml'
       }
     }
-    stage('Build and push image with Container Builder') {
+stage('Build and push image with Container Builder') {
       steps {
         container('gcloud') {
-          sh "/builder/google-cloud-sdk/bin/gcloud builds submit -t ${IMAGE_TAG} ./BinaryCalculatorWebapp/"
-        }
-      }
+sh "/builder/google-cloud-sdk/bin/gcloud auth activate-service-account 826071204478-compute@developer.gserviceaccount.com --key-file=project-deliverable-4-d4d269cc5ffd.json --project=project-4-quality"
+sh "/builder/google-cloud-sdk/bin/gcloud builds submit -t ${IMAGE_TAG} ./BinaryCalculatorWebapp/"
+}
+
     }
   }
 }
+} 
